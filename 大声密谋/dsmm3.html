@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大声密谋 3.0-独立版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .key-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .key-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: #ccc;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 15px;
+        }
+
+        .toggle-switch.active {
+            background: #4facfe;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 27px;
+        }
+
+        .key-input-group {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .key-input-group.show {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .input-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-header h3 {
+            color: #555;
+            font-size: 1.2em;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .result-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+            min-height: 100px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>大声密谋 3.0-独立版</h1>
+            <p>安全加密对话工具 - 使用"玛卡巴"编码系统</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 密钥设置 -->
+            <div class="key-section">
+                <div class="key-toggle">
+                    <div class="toggle-switch" id="keyToggle"></div>
+                    <label for="keyToggle" style="cursor: pointer;">启用密钥保护</label>
+                </div>
+                <div class="key-input-group" id="keyInputGroup">
+                    <div class="input-group">
+                        <label for="keyInput">密钥 (双方必须使用相同密钥)</label>
+                        <input type="password" id="keyInput" placeholder="请输入密钥..." />
+                    </div>
+                </div>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="input-group">
+                <label for="textInput">输入文本</label>
+                <textarea id="textInput" placeholder="请输入要加密或解密的文本..."></textarea>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="button-group">
+                <button class="btn btn-primary" id="encryptBtn">🔒 加密</button>
+                <button class="btn btn-secondary" id="decryptBtn">🔓 解密</button>
+            </div>
+
+            <!-- 结果显示 -->
+            <div class="result-section">
+                <div class="result-header">
+                    <h3>处理结果</h3>
+                    <button class="copy-btn" id="copyBtn">复制结果</button>
+                </div>
+                <div class="result-text" id="resultText">处理结果将显示在这里...</div>
+            </div>
+
+            <!-- 消息提示 -->
+            <div id="alertContainer"></div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 大声密谋 3.0-独立版 | 基于"玛卡巴"编码的安全加密工具</p>
+        </div>
+    </div>
+
+    <script>
+        class DashengMimou {
+            constructor() {
+                // 基础字符映射
+                this.baseChars = ['玛', '卡', '巴'];
+                this.separator = '咔';
+                
+                // 初始化UI
+                this.initializeUI();
+            }
+
+            initializeUI() {
+                // 获取DOM元素
+                this.keyToggle = document.getElementById('keyToggle');
+                this.keyInputGroup = document.getElementById('keyInputGroup');
+                this.keyInput = document.getElementById('keyInput');
+                this.textInput = document.getElementById('textInput');
+                this.encryptBtn = document.getElementById('encryptBtn');
+                this.decryptBtn = document.getElementById('decryptBtn');
+                this.resultText = document.getElementById('resultText');
+                this.copyBtn = document.getElementById('copyBtn');
+                this.alertContainer = document.getElementById('alertContainer');
+
+                // 绑定事件
+                this.keyToggle.addEventListener('click', () => this.toggleKey());
+                this.encryptBtn.addEventListener('click', () => this.encrypt());
+                this.decryptBtn.addEventListener('click', () => this.decrypt());
+                this.copyBtn.addEventListener('click', () => this.copyResult());
+
+                // 实时输入处理
+                this.textInput.addEventListener('input', () => this.clearAlerts());
+            }
+
+            toggleKey() {
+                this.keyToggle.classList.toggle('active');
+                if (this.keyToggle.classList.contains('active')) {
+                    this.keyInputGroup.classList.add('show');
+                } else {
+                    this.keyInputGroup.classList.remove('show');
+                    this.keyInput.value = '';
+                }
+            }
+
+            // 生成密钥衍生的字符映射
+            generateKeyMapping(key) {
+                if (!key) return this.baseChars;
+                
+                // 使用简单的哈希函数生成伪随机序列
+                let hash = 0;
+                for (let i = 0; i < key.length; i++) {
+                    hash = ((hash << 5) - hash + key.charCodeAt(i)) & 0xffffffff;
+                }
+                
+                // 根据哈希值重新排列基础字符
+                const chars = [...this.baseChars];
+                const seed = Math.abs(hash);
+                
+                // Fisher-Yates洗牌算法
+                for (let i = chars.length - 1; i > 0; i--) {
+                    const j = (seed + i) % (i + 1);
+                    [chars[i], chars[j]] = [chars[j], chars[i]];
+                }
+                
+                return chars;
+            }
+
+            // 字符串转二进制
+            stringToBinary(str) {
+                return str.split('').map(char => {
+                    return char.charCodeAt(0).toString(2).padStart(16, '0');
+                }).join('');
+            }
+
+            // 二进制转字符串
+            binaryToString(binary) {
+                let result = '';
+                for (let i = 0; i < binary.length; i += 16) {
+                    const chunk = binary.substr(i, 16);
+                    if (chunk.length === 16) {
+                        result += String.fromCharCode(parseInt(chunk, 2));
+                    }
+                }
+                return result;
+            }
+
+            // 二进制转三进制
+            binaryToTernary(binary) {
+                let decimal = BigInt('0b' + binary);
+                if (decimal === 0n) return '0';
+                
+                let ternary = '';
+                while (decimal > 0n) {
+                    ternary = (decimal % 3n).toString() + ternary;
+                    decimal = decimal / 3n;
+                }
+                return ternary;
+            }
+
+            // 三进制转二进制
+            ternaryToBinary(ternary) {
+                if (ternary === '0') return '0';
+                
+                let decimal = BigInt(0);
+                let power = BigInt(1);
+                
+                for (let i = ternary.length - 1; i >= 0; i--) {
+                    decimal += BigInt(ternary[i]) * power;
+                    power *= 3n;
+                }
+                
+                return decimal.toString(2);
+            }
+
+            // 三进制转"玛卡巴"编码
+            ternaryToMakaba(ternary, mapping) {
+                return ternary.split('').map(digit => mapping[parseInt(digit)]).join('');
+            }
+
+            // "玛卡巴"编码转三进制
+            makabaToTernary(makaba, mapping) {
+                const reverseMapping = {};
+                mapping.forEach((char, index) => {
+                    reverseMapping[char] = index.toString();
+                });
+                
+                return makaba.split('').map(char => reverseMapping[char] || '').join('');
+            }
+
+            encrypt() {
+                try {
+                    const text = this.textInput.value.trim();
+                    if (!text) {
+                        this.showAlert('请输入要加密的文本', 'error');
+                        return;
+                    }
+
+                    const key = this.keyToggle.classList.contains('active') ? this.keyInput.value : '';
+                    if (this.keyToggle.classList.contains('active') && !key) {
+                        this.showAlert('请输入密钥', 'error');
+                        return;
+                    }
+
+                    const mapping = this.generateKeyMapping(key);
+                    
+                    // 将文本转换为二进制
+                    const binary = this.stringToBinary(text);
+                    
+                    // 二进制转三进制
+                    const ternary = this.binaryToTernary(binary);
+                    
+                    // 三进制转"玛卡巴"编码
+                    const makaba = this.ternaryToMakaba(ternary, mapping);
+                    
+                    // 分块并用分隔符连接
+                    const blockSize = 9; // 每9个字符一组
+                    const blocks = [];
+                    for (let i = 0; i < makaba.length; i += blockSize) {
+                        blocks.push(makaba.substr(i, blockSize));
+                    }
+                    
+                    const result = blocks.join(this.separator);
+                    this.resultText.textContent = result;
+                    this.showAlert('加密成功！', 'success');
+                    
+                } catch (error) {
+                    console.error('加密错误:', error);
+                    this.showAlert('加密失败，请检查输入', 'error');
+                }
+            }
+
+            decrypt() {
+                try {
+                    const text = this.textInput.value.trim();
+                    if (!text) {
+                        this.showAlert('请输入要解密的密文', 'error');
+                        return;
+                    }
+
+                    const key = this.keyToggle.classList.contains('active') ? this.keyInput.value : '';
+                    if (this.keyToggle.classList.contains('active') && !key) {
+                        this.showAlert('请输入密钥', 'error');
+                        return;
+                    }
+
+                    const mapping = this.generateKeyMapping(key);
+                    
+                    // 移除分隔符，合并所有块
+                    const makaba = text.split(this.separator).join('');
+                    
+                    // 验证输入是否只包含有效字符
+                    const validChars = new Set(mapping);
+                    for (let char of makaba) {
+                        if (!validChars.has(char)) {
+                            throw new Error(`无效字符: ${char}`);
+                        }
+                    }
+                    
+                    // "玛卡巴"编码转三进制
+                    const ternary = this.makabaToTernary(makaba, mapping);
+                    
+                    // 三进制转二进制
+                    const binary = this.ternaryToBinary(ternary);
+                    
+                    // 确保二进制长度是16的倍数
+                    const paddedBinary = binary.padStart(Math.ceil(binary.length / 16) * 16, '0');
+                    
+                    // 二进制转字符串
+                    const result = this.binaryToString(paddedBinary);
+                    
+                    this.resultText.textContent = result;
+                    this.showAlert('解密成功！', 'success');
+                    
+                } catch (error) {
+                    console.error('解密错误:', error);
+                    this.showAlert('解密失败，请检查密文格式或密钥是否正确', 'error');
+                }
+            }
+
+            copyResult() {
+                const text = this.resultText.textContent;
+                if (text === '处理结果将显示在这里...') {
+                    this.showAlert('没有可复制的内容', 'error');
+                    return;
+                }
+
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showAlert('复制成功！', 'success');
+                }).catch(() => {
+                    // 降级方案
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    this.showAlert('复制成功！', 'success');
+                });
+            }
+
+            showAlert(message, type) {
+                this.clearAlerts();
+                
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type}`;
+                alert.textContent = message;
+                
+                this.alertContainer.appendChild(alert);
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 3000);
+            }
+
+            clearAlerts() {
+                this.alertContainer.innerHTML = '';
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new DashengMimou();
+        });
+    </script>
+</body>
+</html>
