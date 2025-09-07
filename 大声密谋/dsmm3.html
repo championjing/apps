@@ -552,18 +552,42 @@
                     return;
                 }
 
-                navigator.clipboard.writeText(text).then(() => {
-                    this.showAlert('复制成功！', 'success');
-                }).catch(() => {
-                    // 降级方案
+                // 检查是否支持现代剪贴板API
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.showAlert('复制成功！', 'success');
+                    }).catch(() => {
+                        this.fallbackCopy(text);
+                    });
+                } else {
+                    // 使用降级方案
+                    this.fallbackCopy(text);
+                }
+            }
+
+            fallbackCopy(text) {
+                try {
                     const textArea = document.createElement('textarea');
                     textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
                     document.body.appendChild(textArea);
+                    textArea.focus();
                     textArea.select();
-                    document.execCommand('copy');
+                    
+                    const successful = document.execCommand('copy');
                     document.body.removeChild(textArea);
-                    this.showAlert('复制成功！', 'success');
-                });
+                    
+                    if (successful) {
+                        this.showAlert('复制成功！', 'success');
+                    } else {
+                        this.showAlert('复制失败，请手动复制', 'error');
+                    }
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    this.showAlert('复制失败，请手动复制', 'error');
+                }
             }
 
             showAlert(message, type) {
