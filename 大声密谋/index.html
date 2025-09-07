@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大声密谋 3.0-独立版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .key-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .key-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .key-toggle input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .key-input-container {
+            display: none;
+        }
+
+        .key-input-container.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .input-group textarea,
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group textarea:focus,
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .copy-btn {
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .result-text {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">大声密谋 3.0-独立版</h1>
+        <p class="subtitle">安全的文本加密对话工具</p>
+        
+        <div class="key-section">
+            <div class="key-toggle">
+                <input type="checkbox" id="useKey" onchange="toggleKeyInput()">
+                <label for="useKey">使用密钥加密（增强安全性）</label>
+            </div>
+            <div class="key-input-container" id="keyInputContainer">
+                <div class="warning">
+                    ⚠️ 启用密钥后，加密和解密都需要相同的密钥。请妥善保管密钥！
+                </div>
+                <div class="input-group">
+                    <label for="keyInput">密钥：</label>
+                    <input type="password" id="keyInput" placeholder="请输入密钥...">
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="inputText">输入文本：</label>
+            <textarea id="inputText" rows="5" placeholder="请输入要加密或解密的文本..."></textarea>
+            <div id="inputError" class="error"></div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="encryptText()">🔒 加密</button>
+            <button class="btn btn-secondary" onclick="decryptText()">🔓 解密</button>
+        </div>
+
+        <div class="result-section">
+            <div class="result-header">
+                <span class="result-title">结果：</span>
+                <button class="copy-btn" onclick="copyResult()">📋 复制</button>
+            </div>
+            <div id="resultText" class="result-text">结果将在这里显示...</div>
+            <div id="resultMessage" class="success"></div>
+        </div>
+    </div>
+
+    <script>
+        // 基础字符映射
+        const BASE_CHARS = ['玛', '卡', '巴'];
+        const SEPARATOR = '咔';
+
+        // 切换密钥输入显示
+        function toggleKeyInput() {
+            const checkbox = document.getElementById('useKey');
+            const container = document.getElementById('keyInputContainer');
+            
+            if (checkbox.checked) {
+                container.classList.add('active');
+            } else {
+                container.classList.remove('active');
+                document.getElementById('keyInput').value = '';
+            }
+            
+            clearMessages();
+        }
+
+        // 清除错误和成功消息
+        function clearMessages() {
+            document.getElementById('inputError').textContent = '';
+            document.getElementById('resultMessage').textContent = '';
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            document.getElementById('inputError').textContent = message;
+            document.getElementById('resultText').textContent = '';
+        }
+
+        // 显示成功消息
+        function showSuccess(message) {
+            document.getElementById('resultMessage').textContent = message;
+        }
+
+        // 简单的密钥混淆函数
+        function keyHash(key) {
+            let hash = 0;
+            for (let i = 0; i < key.length; i++) {
+                const char = key.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            return Math.abs(hash);
+        }
+
+        // 基于密钥生成字符映射
+        function generateKeyMapping(key) {
+            if (!key) return BASE_CHARS;
+            
+            const hash = keyHash(key);
+            const mapping = [...BASE_CHARS];
+            
+            // 基于密钥哈希值重排字符
+            for (let i = mapping.length - 1; i > 0; i--) {
+                const j = (hash + i) % (i + 1);
+                [mapping[i], mapping[j]] = [mapping[j], mapping[i]];
+            }
+            
+            return mapping;
+        }
+
+        // 字符转换为三进制
+        function charToBase3(char, keyMapping) {
+            const code = char.charCodeAt(0);
+            let result = '';
+            let num = code;
+            
+            // 转换为三进制并用字符映射
+            do {
+                result = keyMapping[num % 3] + result;
+                num = Math.floor(num / 3);
+            } while (num > 0);
+            
+            return result;
+        }
+
+        // 三进制转换为字符
+        function base3ToChar(base3Str, keyMapping) {
+            let num = 0;
+            let power = 0;
+            
+            // 创建反向映射
+            const reverseMapping = {};
+            keyMapping.forEach((char, index) => {
+                reverseMapping[char] = index;
+            });
+            
+            // 从右到左解析
+            for (let i = base3Str.length - 1; i >= 0; i--) {
+                const char = base3Str[i];
+                if (reverseMapping[char] === undefined) {
+                    throw new Error('无效的密文字符: ' + char);
+                }
+                num += reverseMapping[char] * Math.pow(3, power);
+                power++;
+            }
+            
+            return String.fromCharCode(num);
+        }
+
+        // 加密函数
+        function encryptText() {
+            clearMessages();
+            
+            const inputText = document.getElementById('inputText').value.trim();
+            const useKey = document.getElementById('useKey').checked;
+            const key = useKey ? document.getElementById('keyInput').value : '';
+            
+            if (!inputText) {
+                showError('请输入要加密的文本');
+                return;
+            }
+            
+            if (useKey && !key) {
+                showError('启用密钥模式时，请输入密钥');
+                return;
+            }
+            
+            try {
+                const keyMapping = generateKeyMapping(key);
+                const encrypted = inputText
+                    .split('')
+                    .map(char => charToBase3(char, keyMapping))
+                    .join(SEPARATOR);
+                
+                document.getElementById('resultText').textContent = encrypted;
+                showSuccess('加密成功！');
+            } catch (error) {
+                showError('加密失败: ' + error.message);
+            }
+        }
+
+        // 解密函数
+        function decryptText() {
+            clearMessages();
+            
+            const inputText = document.getElementById('inputText').value.trim();
+            const useKey = document.getElementById('useKey').checked;
+            const key = useKey ? document.getElementById('keyInput').value : '';
+            
+            if (!inputText) {
+                showError('请输入要解密的文本');
+                return;
+            }
+            
+            if (useKey && !key) {
+                showError('启用密钥模式时，请输入密钥');
+                return;
+            }
+            
+            // 检查是否为有效的密文格式
+            const validChars = [...BASE_CHARS, SEPARATOR];
+            for (let char of inputText) {
+                if (!validChars.includes(char)) {
+                    showError('输入的文本不是有效的密文格式');
+                    return;
+                }
+            }
+            
+            try {
+                const keyMapping = generateKeyMapping(key);
+                const parts = inputText.split(SEPARATOR);
+                
+                if (parts.some(part => part === '')) {
+                    throw new Error('密文格式错误');
+                }
+                
+                const decrypted = parts
+                    .map(part => base3ToChar(part, keyMapping))
+                    .join('');
+                
+                document.getElementById('resultText').textContent = decrypted;
+                showSuccess('解密成功！');
+            } catch (error) {
+                showError('解密失败: ' + error.message);
+            }
+        }
+
+        // 复制结果
+        function copyResult() {
+            const resultText = document.getElementById('resultText').textContent;
+            
+            if (!resultText || resultText === '结果将在这里显示...') {
+                showError('没有可复制的内容');
+                return;
+            }
+            
+            navigator.clipboard.writeText(resultText).then(() => {
+                showSuccess('已复制到剪贴板！');
+            }).catch(() => {
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = resultText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showSuccess('已复制到剪贴板！');
+            });
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'e':
+                        event.preventDefault();
+                        encryptText();
+                        break;
+                    case 'd':
+                        event.preventDefault();
+                        decryptText();
+                        break;
+                    case 'c':
+                        if (event.target.id !== 'inputText' && event.target.id !== 'keyInput') {
+                            event.preventDefault();
+                            copyResult();
+                        }
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
