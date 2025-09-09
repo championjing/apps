@@ -159,8 +159,8 @@
         .title-text, .subtitle-text {
             display: block;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-            line-height: 1.2;
-            margin: 5px 0;
+            line-height: 1.5;
+            margin: 7.5px 0;
         }
 
         .safety-lines {
@@ -299,7 +299,8 @@
                     <div class="form-group">
                         <label>垂直位置: <span id="verticalPosValue">顶部</span></label>
                         <select id="verticalPosition">
-                            <option value="top">顶部</option>
+                            <option value="top" selected>顶部</option>
+                            <option value="upper-center">中上</option>
                             <option value="center">居中</option>
                             <option value="bottom">底部</option>
                         </select>
@@ -498,12 +499,12 @@
                 // 设置水平位置
                 switch(horizontalPosition) {
                     case 'left':
-                        overlay.style.left = `${20 + horizontalOffset}px`;
+                        overlay.style.left = `${60 + horizontalOffset}px`;
                         overlay.style.textAlign = 'left';
                         overlay.style.width = 'calc(100% - 40px)';
                         break;
                     case 'right':
-                        overlay.style.right = `${20 - horizontalOffset}px`;
+                        overlay.style.right = `${60 - horizontalOffset}px`;
                         overlay.style.textAlign = 'right';
                         overlay.style.width = 'calc(100% - 40px)';
                         break;
@@ -517,10 +518,21 @@
                 // 设置垂直位置
                 switch(verticalPosition) {
                     case 'top':
-                        overlay.style.top = `${20 + verticalOffset}px`;
+                        // 顶部位置向中间移动40px：从20px改为60px
+                        overlay.style.top = `${60 + verticalOffset}px`;
+                        break;
+                    case 'upper-center':
+                        // 中上位置：40%位置 + 20px下移，使用transform确保文字以40%位置为中心
+                        overlay.style.top = 'calc(40% + 20px)';
+                        if (horizontalPosition === 'center') {
+                            overlay.style.transform = `translateX(${horizontalOffset}px) translateX(-50%) translateY(${verticalOffset}px) translateY(-50%)`;
+                        } else {
+                            overlay.style.transform = `translateY(${verticalOffset}px) translateY(-50%)`;
+                        }
                         break;
                     case 'bottom':
-                        overlay.style.bottom = `${20 - verticalOffset}px`;
+                        // 底部位置向中间移动40px：从20px改为60px
+                        overlay.style.bottom = `${60 - verticalOffset}px`;
                         break;
                     default: // center
                         overlay.style.top = '50%';
@@ -546,7 +558,7 @@
             subtitleSizeValue.textContent = subtitleSize;
             
             // 更新位置显示
-            const verticalLabels = {'top': '顶部', 'center': '居中', 'bottom': '底部'};
+            const verticalLabels = {'top': '顶部', 'upper-center': '中上', 'center': '居中', 'bottom': '底部'};
             const horizontalLabels = {'left': '左对齐', 'center': '居中', 'right': '右对齐'};
             verticalPosValue.textContent = verticalLabels[verticalPosition];
             horizontalPosValue.textContent = horizontalLabels[horizontalPosition];
@@ -659,15 +671,21 @@
             // 计算基础Y位置
             let baseY;
             const totalTextHeight = Array.from(textElements).reduce((height, element) => {
-                return height + parseInt(window.getComputedStyle(element).fontSize) + 10;
-            }, 0) - 10; // 减去最后一个间距
+                return height + parseInt(window.getComputedStyle(element).fontSize) + 15; // 增加间距为1.5倍
+            }, 0) - 15; // 减去最后一个间距
             
             switch(verticalPosition) {
                 case 'top':
-                    baseY = 30 + verticalOffset;
+                    // 顶部位置向中间移动40px：从30px改为70px
+                    baseY = 70 + verticalOffset;
+                    break;
+                case 'upper-center':
+                    // 中上位置：40%位置 + 20px下移
+                    baseY = canvasHeight * 0.4 + 20 + verticalOffset - totalTextHeight / 2;
                     break;
                 case 'bottom':
-                    baseY = canvasHeight - 30 - totalTextHeight + verticalOffset;
+                    // 底部位置向中间移动40px：从30px改为70px
+                    baseY = canvasHeight - 70 - totalTextHeight + verticalOffset;
                     break;
                 default: // center
                     baseY = (canvasHeight - totalTextHeight) / 2 + verticalOffset;
@@ -708,7 +726,7 @@
                 // 绘制文字
                 ctx.fillText(text, baseX, yOffset + fontSize);
 
-                yOffset += fontSize + 10; // 为下一行文字增加间距
+                yOffset += fontSize + 15; // 为下一行文字增加间距（增加为1.5倍）
             }
         }
 
