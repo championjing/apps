@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>视频封面设计工具</title>
     <style>
+        /* 加载网络字体 */
+        @font-face {
+            font-family: 'SmileySans';
+            src: url('https://revo-resource.oss-cn-beijing.aliyuncs.com/SmileySans-Oblique.ttf') format('truetype');
+            font-display: swap;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -272,6 +279,7 @@
                         <div class="form-group">
                             <label>字体</label>
                             <select id="fontFamily">
+                                <option value="SmileySans" selected>得意黑</option>
                                 <option value="Microsoft YaHei">微软雅黑</option>
                                 <option value="SimHei">黑体</option>
                                 <option value="Arial">Arial</option>
@@ -813,6 +821,39 @@
         horizontalOffsetInput.addEventListener('input', updatePreview);
         textOrderInputs.forEach(input => {
             input.addEventListener('change', updatePreview);
+        });
+
+        // 字体加载函数
+        async function loadWebFonts() {
+            try {
+                // 检查网络连接
+                if (!navigator.onLine) {
+                    console.log('无网络连接，跳过网络字体加载');
+                    return;
+                }
+
+                // 加载得意黑字体
+                const font = new FontFace('SmileySans', 'url(https://revo-resource.oss-cn-beijing.aliyuncs.com/SmileySans-Oblique.ttf)');
+                
+                const loadedFont = await Promise.race([
+                    font.load(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('字体加载超时')), 10000))
+                ]);
+                
+                document.fonts.add(loadedFont);
+                console.log('得意黑字体加载成功');
+                
+                // 字体加载完成后刷新预览
+                updatePreview();
+                
+            } catch (error) {
+                console.log('字体加载失败:', error.message);
+            }
+        }
+
+        // 页面加载完成后加载字体
+        document.addEventListener('DOMContentLoaded', () => {
+            loadWebFonts();
         });
 
         // 初始化预览
