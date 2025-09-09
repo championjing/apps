@@ -293,12 +293,12 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>主标题大小: <span id="titleSizeValue">24</span>px</label>
-                        <input type="range" id="titleSize" min="12" max="48" value="24">
+                        <label>主标题大小: <span id="titleSizeValue">30</span>px</label>
+                        <input type="range" id="titleSize" min="12" max="48" value="30">
                     </div>
                     <div class="form-group">
-                        <label>副标题大小: <span id="subtitleSizeValue">18</span>px</label>
-                        <input type="range" id="subtitleSize" min="10" max="36" value="18">
+                        <label>副标题大小: <span id="subtitleSizeValue">24</span>px</label>
+                        <input type="range" id="subtitleSize" min="10" max="36" value="20">
                     </div>
                 </div>
 
@@ -340,15 +340,7 @@
                 </div>
 
                 <div class="control-group">
-                    <h3>💾 保存设置</h3>
-                    <div class="form-group">
-                        <label>保存方式</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <button type="button" class="file-input-button" onclick="selectCustomPath()" style="padding: 8px 12px; font-size: 12px;">自定义保存</button>
-                            <span style="font-size: 12px; color: #666;">或直接下载</span>
-                        </div>
-                        <div id="selectedPath" style="margin-top: 5px; font-size: 12px; color: #666;">默认使用浏览器下载文件夹</div>
-                    </div>
+                    <h3>💾 保存图片</h3>
                     <button class="save-button" onclick="saveHorizontalImage()">保存横版封面</button>
                     <button class="save-button" onclick="saveVerticalImage()">保存竖版封面</button>
                 </div>
@@ -421,10 +413,7 @@
         const verticalOffsetValue = document.getElementById('verticalOffsetValue');
         const horizontalOffsetValue = document.getElementById('horizontalOffsetValue');
         
-        // 保存设置元素
-        const selectedPath = document.getElementById('selectedPath');
-        
-        // 保存设置变量
+        // 保存设置变量（保留用于兼容性）
         let useCustomSave = false;
 
         // 更新预览函数
@@ -584,16 +573,7 @@
             return `${dateStr}_${cleanTitle}${suffix}.png`;
         }
         
-        // 选择自定义保存路径
-        async function selectCustomPath() {
-            if ('showSaveFilePicker' in window) {
-                useCustomSave = true;
-                selectedPath.textContent = '已启用自定义保存，保存时将弹出文件选择对话框';
-                selectedPath.style.color = '#28a745';
-            } else {
-                alert('您的浏览器不支持自定义保存路径功能，将使用默认下载方式');
-            }
-        }
+
 
         // 处理背景图片
         function handleBackgroundImage(event) {
@@ -744,57 +724,13 @@
         }
 
         function downloadCanvas(canvas, filename) {
-            // 如果启用了自定义保存且浏览器支持
-            if (useCustomSave && 'showSaveFilePicker' in window) {
-                canvas.toBlob(async (blob) => {
-                    try {
-                        const fileHandle = await window.showSaveFilePicker({
-                            suggestedName: filename,
-                            types: [{
-                                description: 'PNG 图片',
-                                accept: { 'image/png': ['.png'] }
-                            }]
-                        });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
-                        
-                        // 显示成功提示
-                        const originalText = selectedPath.textContent;
-                        selectedPath.textContent = `保存成功: ${filename}`;
-                        selectedPath.style.color = '#28a745';
-                        setTimeout(() => {
-                            selectedPath.textContent = originalText;
-                            selectedPath.style.color = '#28a745';
-                        }, 3000);
-                        
-                    } catch (err) {
-                        if (err.name !== 'AbortError') {
-                            console.error('保存失败:', err);
-                            // 如果失败，回退到默认下载方式
-                            const link = document.createElement('a');
-                            link.download = filename;
-                            link.href = canvas.toDataURL();
-                            link.click();
-                        }
-                    }
-                });
-            } else {
-                // 默认下载方式
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL();
-                link.click();
-                
-                // 显示下载提示
-                const originalText = selectedPath.textContent;
-                selectedPath.textContent = `已下载: ${filename}`;
-                selectedPath.style.color = '#007bff';
-                setTimeout(() => {
-                    selectedPath.textContent = originalText;
-                    selectedPath.style.color = '#666';
-                }, 3000);
-            }
+            // 直接下载方式
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+            
+            console.log(`图片已下载: ${filename}`);
         }
 
         function saveHorizontalImage() {
