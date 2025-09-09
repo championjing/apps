@@ -341,10 +341,6 @@
                         </div>
                         <div id="selectedPath" style="margin-top: 5px; font-size: 12px; color: #666;">默认使用浏览器下载文件夹</div>
                     </div>
-                    <div class="form-group">
-                        <label>文件名预览</label>
-                        <div id="filenamePreview" style="padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px; color: #333;"></div>
-                    </div>
                     <button class="save-button" onclick="saveHorizontalImage()">保存横版封面</button>
                     <button class="save-button" onclick="saveVerticalImage()">保存竖版封面</button>
                 </div>
@@ -419,7 +415,6 @@
         
         // 保存设置元素
         const selectedPath = document.getElementById('selectedPath');
-        const filenamePreview = document.getElementById('filenamePreview');
         
         // 保存设置变量
         let useCustomSave = false;
@@ -499,12 +494,12 @@
                 // 设置水平位置
                 switch(horizontalPosition) {
                     case 'left':
-                        overlay.style.left = `${60 + horizontalOffset}px`;
+                        overlay.style.left = `${20 + horizontalOffset}px`;
                         overlay.style.textAlign = 'left';
                         overlay.style.width = 'calc(100% - 40px)';
                         break;
                     case 'right':
-                        overlay.style.right = `${60 - horizontalOffset}px`;
+                        overlay.style.right = `${20 - horizontalOffset}px`;
                         overlay.style.textAlign = 'right';
                         overlay.style.width = 'calc(100% - 40px)';
                         break;
@@ -564,9 +559,6 @@
             horizontalPosValue.textContent = horizontalLabels[horizontalPosition];
             verticalOffsetValue.textContent = verticalOffset;
             horizontalOffsetValue.textContent = horizontalOffset;
-            
-            // 更新文件名预览
-            updateFilenamePreview();
         }
         
         // 生成文件名函数
@@ -582,16 +574,6 @@
             const cleanTitle = titleText.replace(/[\\/:*?"<>|]/g, '_').substring(0, 50);
             
             return `${dateStr}_${cleanTitle}${suffix}.png`;
-        }
-        
-        // 更新文件名预览
-        function updateFilenamePreview() {
-            const horizontalName = generateFilename('_横版');
-            const verticalName = generateFilename('_竖版');
-            filenamePreview.innerHTML = `
-                <div>横版: ${horizontalName}</div>
-                <div>竖版: ${verticalName}</div>
-            `;
         }
         
         // 选择自定义保存路径
@@ -627,8 +609,22 @@
             canvas.height = height;
 
             const previewElement = document.getElementById(canvasId);
+            if (!previewElement) {
+                alert(`找不到预览元素: ${canvasId}`);
+                return;
+            }
+            
             const contentElement = previewElement.querySelector('.canvas-content');
+            if (!contentElement) {
+                alert(`找不到 canvas-content 元素在: ${canvasId}`);
+                return;
+            }
+            
             const textOverlay = contentElement.querySelector('.text-overlay');
+            if (!textOverlay) {
+                alert(`找不到 text-overlay 元素在: ${canvasId}`);
+                return;
+            }
 
             // 绘制背景
             const bgImage = contentElement.style.backgroundImage;
@@ -668,42 +664,51 @@
             const verticalOffset = parseInt(verticalOffsetInput.value);
             const horizontalOffset = parseInt(horizontalOffsetInput.value);
             
+            // 获取预览区域的尺寸用于比例计算
+            const previewWidth = textOverlay.parentElement.offsetWidth;
+            const previewHeight = textOverlay.parentElement.offsetHeight;
+            
+            // 计算缩放比例
+            const scaleX = canvasWidth / previewWidth;
+            const scaleY = canvasHeight / previewHeight;
+            
             // 计算基础Y位置
             let baseY;
             const totalTextHeight = Array.from(textElements).reduce((height, element) => {
-                return height + parseInt(window.getComputedStyle(element).fontSize) + 15; // 增加间距为1.5倍
-            }, 0) - 15; // 减去最后一个间距
+                const fontSize = parseInt(window.getComputedStyle(element).fontSize) * scaleY; // 按比例缩放
+                return height + fontSize + 15 * scaleY; // 间距也按比例缩放
+            }, 0) - 15 * scaleY; // 减去最后一个间距
             
             switch(verticalPosition) {
                 case 'top':
                     // 顶部位置向中间移动40px：从30px改为70px
-                    baseY = 70 + verticalOffset;
+                    baseY = (70 + verticalOffset) * scaleY;
                     break;
                 case 'upper-center':
                     // 中上位置：40%位置 + 20px下移
-                    baseY = canvasHeight * 0.4 + 20 + verticalOffset - totalTextHeight / 2;
+                    baseY = canvasHeight * 0.4 + (20 + verticalOffset) * scaleY - totalTextHeight / 2;
                     break;
                 case 'bottom':
                     // 底部位置向中间移动40px：从30px改为70px
-                    baseY = canvasHeight - 70 - totalTextHeight + verticalOffset;
+                    baseY = canvasHeight - (70 - verticalOffset) * scaleY - totalTextHeight;
                     break;
                 default: // center
-                    baseY = (canvasHeight - totalTextHeight) / 2 + verticalOffset;
+                    baseY = (canvasHeight - totalTextHeight) / 2 + verticalOffset * scaleY;
             }
             
             // 计算基础X位置
             let baseX;
             switch(horizontalPosition) {
                 case 'left':
-                    baseX = 30 + horizontalOffset;
+                    baseX = (30 + horizontalOffset) * scaleX;
                     ctx.textAlign = 'left';
                     break;
                 case 'right':
-                    baseX = canvasWidth - 30 + horizontalOffset;
+                    baseX = canvasWidth - (30 - horizontalOffset) * scaleX;
                     ctx.textAlign = 'right';
                     break;
                 default: // center
-                    baseX = canvasWidth / 2 + horizontalOffset;
+                    baseX = canvasWidth / 2 + horizontalOffset * scaleX;
                     ctx.textAlign = 'center';
             }
             
@@ -711,7 +716,7 @@
 
             for (let element of textElements) {
                 const computedStyle = window.getComputedStyle(element);
-                const fontSize = parseInt(computedStyle.fontSize);
+                const fontSize = parseInt(computedStyle.fontSize) * scaleY; // 按比例缩放字体大小
                 const fontFamily = computedStyle.fontFamily;
                 const color = computedStyle.color;
                 const text = element.textContent;
@@ -719,14 +724,14 @@
                 ctx.font = `bold ${fontSize}px ${fontFamily}`;
                 ctx.fillStyle = color;
                 ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * Math.min(scaleX, scaleY); // 描边宽度也按比例缩放
 
                 // 绘制文字阴影
                 ctx.strokeText(text, baseX, yOffset + fontSize);
                 // 绘制文字
                 ctx.fillText(text, baseX, yOffset + fontSize);
 
-                yOffset += fontSize + 15; // 为下一行文字增加间距（增加为1.5倍）
+                yOffset += fontSize + 15 * scaleY; // 间距也按比例缩放
             }
         }
 
@@ -786,12 +791,12 @@
 
         function saveHorizontalImage() {
             const filename = generateFilename('_横版');
-            saveImage('horizontalContent', filename, 1920, 1080);
+            saveImage('horizontalPreview', filename, 1920, 1080);
         }
 
         function saveVerticalImage() {
             const filename = generateFilename('_竖版');
-            saveImage('verticalContent', filename, 1080, 1920);
+            saveImage('verticalPreview', filename, 1080, 1920);
         }
 
         // 事件监听器
