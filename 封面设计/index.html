@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频封面设计工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .control-panel {
+            width: 300px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .control-group h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 12px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="color"] {
+            height: 40px;
+            padding: 2px;
+        }
+
+        .form-group input[type="range"] {
+            margin-top: 5px;
+        }
+
+        .font-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .preview-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-container {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .preview-container h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .preview-canvas {
+            position: relative;
+            margin: 0 auto;
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .horizontal-preview {
+            width: 480px;
+            height: 270px;
+        }
+
+        .vertical-preview {
+            width: 270px;
+            height: 480px;
+        }
+
+        .canvas-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .text-overlay {
+            position: absolute;
+            top: 40%; /* 默认位置为中上五分之二处 */
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            width: calc(100% - 40px);
+            text-align: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .title-text, .subtitle-text {
+            display: block;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            line-height: 1.2;
+            margin: 5px 0;
+        }
+
+        .safety-lines {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px dashed rgba(255,255,255,0.8);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,107,107,0.3);
+        }
+
+        .order-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .order-controls input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .order-controls label {
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 视频封面设计工具</h1>
+            <p>轻松制作专业的视频封面</p>
+        </div>
+        
+        <div class="content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>📝 文字内容</h3>
+                    <div class="form-group">
+                        <label>主标题</label>
+                        <input type="text" id="titleText" placeholder="输入主标题" value="视频标题">
+                    </div>
+                    <div class="form-group">
+                        <label>副标题</label>
+                        <input type="text" id="subtitleText" placeholder="输入副标题" value="副标题内容">
+                    </div>
+                    <div class="form-group">
+                        <label>文字顺序</label>
+                        <div class="order-controls">
+                            <label><input type="radio" name="textOrder" value="title-first" checked> 主标题在上</label>
+                            <label><input type="radio" name="textOrder" value="subtitle-first"> 副标题在上</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🎨 样式设置</h3>
+                    <div class="font-options">
+                        <div class="form-group">
+                            <label>字体</label>
+                            <select id="fontFamily">
+                                <option value="Microsoft YaHei">微软雅黑</option>
+                                <option value="SimHei">黑体</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>文字颜色</label>
+                            <input type="color" id="textColor" value="#FFA500">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>主标题大小: <span id="titleSizeValue">24</span>px</label>
+                        <input type="range" id="titleSize" min="12" max="48" value="24">
+                    </div>
+                    <div class="form-group">
+                        <label>副标题大小: <span id="subtitleSizeValue">18</span>px</label>
+                        <input type="range" id="subtitleSize" min="10" max="36" value="18">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>📍 位置调节</h3>
+                    <div class="form-group">
+                        <label>垂直位置: <span id="verticalPosValue">顶部</span></label>
+                        <select id="verticalPosition">
+                            <option value="top">顶部</option>
+                            <option value="center">居中</option>
+                            <option value="bottom">底部</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>水平位置: <span id="horizontalPosValue">居中</span></label>
+                        <select id="horizontalPosition">
+                            <option value="left">左对齐</option>
+                            <option value="center" selected>居中</option>
+                            <option value="right">右对齐</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>上下偏移: <span id="verticalOffsetValue">0</span>px</label>
+                        <input type="range" id="verticalOffset" min="-100" max="100" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>左右偏移: <span id="horizontalOffsetValue">0</span>px</label>
+                        <input type="range" id="horizontalOffset" min="-100" max="100" value="0">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🖼️ 背景图片</h3>
+                    <div class="file-input-container">
+                        <input type="file" id="backgroundImage" class="file-input" accept="image/*">
+                        <div class="file-input-button">选择背景图片</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>💾 保存设置</h3>
+                    <div class="form-group">
+                        <label>保存方式</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button type="button" class="file-input-button" onclick="selectCustomPath()" style="padding: 8px 12px; font-size: 12px;">自定义保存</button>
+                            <span style="font-size: 12px; color: #666;">或直接下载</span>
+                        </div>
+                        <div id="selectedPath" style="margin-top: 5px; font-size: 12px; color: #666;">默认使用浏览器下载文件夹</div>
+                    </div>
+                    <div class="form-group">
+                        <label>文件名预览</label>
+                        <div id="filenamePreview" style="padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px; color: #333;"></div>
+                    </div>
+                    <button class="save-button" onclick="saveHorizontalImage()">保存横版封面</button>
+                    <button class="save-button" onclick="saveVerticalImage()">保存竖版封面</button>
+                </div>
+            </div>
+
+            <div class="preview-area">
+                <div class="preview-container">
+                    <h3>🖥️ 横屏预览 (16:9)</h3>
+                    <div class="preview-canvas horizontal-preview" id="horizontalPreview">
+                        <div class="canvas-content" id="horizontalContent">
+                            <div class="safety-lines"></div>
+                            <div class="text-overlay" id="horizontalTextOverlay">
+                                <span class="title-text" id="horizontalTitle">视频标题</span>
+                                <span class="subtitle-text" id="horizontalSubtitle">副标题内容</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-container">
+                    <h3>📱 竖屏预览 (9:16)</h3>
+                    <div class="preview-canvas vertical-preview" id="verticalPreview">
+                        <div class="canvas-content" id="verticalContent">
+                            <div class="safety-lines"></div>
+                            <div class="text-overlay" id="verticalTextOverlay">
+                                <span class="title-text" id="verticalTitle">视频标题</span>
+                                <span class="subtitle-text" id="verticalSubtitle">副标题内容</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const titleTextInput = document.getElementById('titleText');
+        const subtitleTextInput = document.getElementById('subtitleText');
+        const fontFamilySelect = document.getElementById('fontFamily');
+        const textColorInput = document.getElementById('textColor');
+        const titleSizeInput = document.getElementById('titleSize');
+        const subtitleSizeInput = document.getElementById('subtitleSize');
+        const backgroundImageInput = document.getElementById('backgroundImage');
+        const textOrderInputs = document.querySelectorAll('input[name="textOrder"]');
+        
+        // 位置控制元素
+        const verticalPositionSelect = document.getElementById('verticalPosition');
+        const horizontalPositionSelect = document.getElementById('horizontalPosition');
+        const verticalOffsetInput = document.getElementById('verticalOffset');
+        const horizontalOffsetInput = document.getElementById('horizontalOffset');
+
+        // 预览元素
+        const horizontalTitle = document.getElementById('horizontalTitle');
+        const horizontalSubtitle = document.getElementById('horizontalSubtitle');
+        const verticalTitle = document.getElementById('verticalTitle');
+        const verticalSubtitle = document.getElementById('verticalSubtitle');
+        const horizontalContent = document.getElementById('horizontalContent');
+        const verticalContent = document.getElementById('verticalContent');
+        const horizontalTextOverlay = document.getElementById('horizontalTextOverlay');
+        const verticalTextOverlay = document.getElementById('verticalTextOverlay');
+
+        // 大小显示元素
+        const titleSizeValue = document.getElementById('titleSizeValue');
+        const subtitleSizeValue = document.getElementById('subtitleSizeValue');
+        
+        // 位置显示元素
+        const verticalPosValue = document.getElementById('verticalPosValue');
+        const horizontalPosValue = document.getElementById('horizontalPosValue');
+        const verticalOffsetValue = document.getElementById('verticalOffsetValue');
+        const horizontalOffsetValue = document.getElementById('horizontalOffsetValue');
+        
+        // 保存设置元素
+        const selectedPath = document.getElementById('selectedPath');
+        const filenamePreview = document.getElementById('filenamePreview');
+        
+        // 保存设置变量
+        let useCustomSave = false;
+
+        // 更新预览函数
+        function updatePreview() {
+            const titleText = titleTextInput.value || '视频标题';
+            const subtitleText = subtitleTextInput.value || '副标题内容';
+            const fontFamily = fontFamilySelect.value;
+            const textColor = textColorInput.value;
+            const titleSize = titleSizeInput.value;
+            const subtitleSize = subtitleSizeInput.value;
+            const textOrder = document.querySelector('input[name="textOrder"]:checked').value;
+            
+            // 获取位置设置
+            const verticalPosition = verticalPositionSelect.value;
+            const horizontalPosition = horizontalPositionSelect.value;
+            const verticalOffset = parseInt(verticalOffsetInput.value);
+            const horizontalOffset = parseInt(horizontalOffsetInput.value);
+
+            // 更新文字内容
+            horizontalTitle.textContent = titleText;
+            horizontalSubtitle.textContent = subtitleText;
+            verticalTitle.textContent = titleText;
+            verticalSubtitle.textContent = subtitleText;
+
+            // 更新样式
+            const titleStyle = `
+                font-family: ${fontFamily};
+                color: ${textColor};
+                font-size: ${titleSize}px;
+                font-weight: bold;
+            `;
+            const subtitleStyle = `
+                font-family: ${fontFamily};
+                color: ${textColor};
+                font-size: ${subtitleSize}px;
+                font-weight: normal;
+            `;
+
+            horizontalTitle.style.cssText = titleStyle;
+            horizontalSubtitle.style.cssText = subtitleStyle;
+            verticalTitle.style.cssText = titleStyle;
+            verticalSubtitle.style.cssText = subtitleStyle;
+
+            // 更新文字顺序
+            if (textOrder === 'subtitle-first') {
+                horizontalTextOverlay.innerHTML = `
+                    <span class="subtitle-text" style="${subtitleStyle}">${subtitleText}</span>
+                    <span class="title-text" style="${titleStyle}">${titleText}</span>
+                `;
+                verticalTextOverlay.innerHTML = `
+                    <span class="subtitle-text" style="${subtitleStyle}">${subtitleText}</span>
+                    <span class="title-text" style="${titleStyle}">${titleText}</span>
+                `;
+            } else {
+                horizontalTextOverlay.innerHTML = `
+                    <span class="title-text" style="${titleStyle}">${titleText}</span>
+                    <span class="subtitle-text" style="${subtitleStyle}">${subtitleText}</span>
+                `;
+                verticalTextOverlay.innerHTML = `
+                    <span class="title-text" style="${titleStyle}">${titleText}</span>
+                    <span class="subtitle-text" style="${subtitleStyle}">${subtitleText}</span>
+                `;
+            }
+            
+            // 计算位置
+            const overlays = [horizontalTextOverlay, verticalTextOverlay];
+            overlays.forEach(overlay => {
+                // 重置位置
+                overlay.style.top = 'auto';
+                overlay.style.bottom = 'auto';
+                overlay.style.left = 'auto';
+                overlay.style.right = 'auto';
+                overlay.style.transform = 'none';
+                
+                // 设置水平位置
+                switch(horizontalPosition) {
+                    case 'left':
+                        overlay.style.left = `${20 + horizontalOffset}px`;
+                        overlay.style.textAlign = 'left';
+                        overlay.style.width = 'calc(100% - 40px)';
+                        break;
+                    case 'right':
+                        overlay.style.right = `${20 - horizontalOffset}px`;
+                        overlay.style.textAlign = 'right';
+                        overlay.style.width = 'calc(100% - 40px)';
+                        break;
+                    default: // center
+                        overlay.style.left = '50%';
+                        overlay.style.transform = `translateX(${horizontalOffset}px) translateX(-50%)`;
+                        overlay.style.textAlign = 'center';
+                        overlay.style.width = 'calc(100% - 40px)';
+                }
+                
+                // 设置垂直位置
+                switch(verticalPosition) {
+                    case 'top':
+                        overlay.style.top = `${20 + verticalOffset}px`;
+                        break;
+                    case 'bottom':
+                        overlay.style.bottom = `${20 - verticalOffset}px`;
+                        break;
+                    default: // center
+                        overlay.style.top = '50%';
+                        if (horizontalPosition === 'center') {
+                            overlay.style.transform = `translateX(${horizontalOffset}px) translateX(-50%) translateY(${verticalOffset}px) translateY(-50%)`;
+                        } else {
+                            overlay.style.transform = `translateY(${verticalOffset}px) translateY(-50%)`;
+                        }
+                }
+            });
+
+            // 添加安全线
+            const safetyLinesHtml = '<div class="safety-lines"></div>';
+            if (!horizontalContent.querySelector('.safety-lines')) {
+                horizontalContent.insertAdjacentHTML('beforeend', safetyLinesHtml);
+            }
+            if (!verticalContent.querySelector('.safety-lines')) {
+                verticalContent.insertAdjacentHTML('beforeend', safetyLinesHtml);
+            }
+
+            // 更新大小显示
+            titleSizeValue.textContent = titleSize;
+            subtitleSizeValue.textContent = subtitleSize;
+            
+            // 更新位置显示
+            const verticalLabels = {'top': '顶部', 'center': '居中', 'bottom': '底部'};
+            const horizontalLabels = {'left': '左对齐', 'center': '居中', 'right': '右对齐'};
+            verticalPosValue.textContent = verticalLabels[verticalPosition];
+            horizontalPosValue.textContent = horizontalLabels[horizontalPosition];
+            verticalOffsetValue.textContent = verticalOffset;
+            horizontalOffsetValue.textContent = horizontalOffset;
+            
+            // 更新文件名预览
+            updateFilenamePreview();
+        }
+        
+        // 生成文件名函数
+        function generateFilename(suffix = '') {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${year}${month}${day}`;
+            
+            const titleText = titleTextInput.value || '视频标题';
+            // 清理文件名中的非法字符
+            const cleanTitle = titleText.replace(/[\\/:*?"<>|]/g, '_').substring(0, 50);
+            
+            return `${dateStr}_${cleanTitle}${suffix}.png`;
+        }
+        
+        // 更新文件名预览
+        function updateFilenamePreview() {
+            const horizontalName = generateFilename('_横版');
+            const verticalName = generateFilename('_竖版');
+            filenamePreview.innerHTML = `
+                <div>横版: ${horizontalName}</div>
+                <div>竖版: ${verticalName}</div>
+            `;
+        }
+        
+        // 选择自定义保存路径
+        async function selectCustomPath() {
+            if ('showSaveFilePicker' in window) {
+                useCustomSave = true;
+                selectedPath.textContent = '已启用自定义保存，保存时将弹出文件选择对话框';
+                selectedPath.style.color = '#28a745';
+            } else {
+                alert('您的浏览器不支持自定义保存路径功能，将使用默认下载方式');
+            }
+        }
+
+        // 处理背景图片
+        function handleBackgroundImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    horizontalContent.style.backgroundImage = `url(${imageUrl})`;
+                    verticalContent.style.backgroundImage = `url(${imageUrl})`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 保存图片函数
+        function saveImage(canvasId, filename, width, height) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = width;
+            canvas.height = height;
+
+            const previewElement = document.getElementById(canvasId);
+            const contentElement = previewElement.querySelector('.canvas-content');
+            const textOverlay = contentElement.querySelector('.text-overlay');
+
+            // 绘制背景
+            const bgImage = contentElement.style.backgroundImage;
+            if (bgImage && bgImage !== 'none') {
+                const img = new Image();
+                img.onload = function() {
+                    // 绘制背景图片
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // 绘制文字
+                    drawText(ctx, textOverlay, width, height);
+                    
+                    // 下载图片
+                    downloadCanvas(canvas, filename);
+                };
+                const imageUrl = bgImage.slice(5, -2); // 移除 'url("' 和 '")'
+                img.src = imageUrl;
+            } else {
+                // 如果没有背景图，使用黑色背景
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, width, height);
+                
+                // 绘制文字
+                drawText(ctx, textOverlay, width, height);
+                
+                // 下载图片
+                downloadCanvas(canvas, filename);
+            }
+        }
+
+        function drawText(ctx, textOverlay, canvasWidth, canvasHeight) {
+            const textElements = textOverlay.children;
+            
+            // 获取位置设置
+            const verticalPosition = verticalPositionSelect.value;
+            const horizontalPosition = horizontalPositionSelect.value;
+            const verticalOffset = parseInt(verticalOffsetInput.value);
+            const horizontalOffset = parseInt(horizontalOffsetInput.value);
+            
+            // 计算基础Y位置
+            let baseY;
+            const totalTextHeight = Array.from(textElements).reduce((height, element) => {
+                return height + parseInt(window.getComputedStyle(element).fontSize) + 10;
+            }, 0) - 10; // 减去最后一个间距
+            
+            switch(verticalPosition) {
+                case 'top':
+                    baseY = 30 + verticalOffset;
+                    break;
+                case 'bottom':
+                    baseY = canvasHeight - 30 - totalTextHeight + verticalOffset;
+                    break;
+                default: // center
+                    baseY = (canvasHeight - totalTextHeight) / 2 + verticalOffset;
+            }
+            
+            // 计算基础X位置
+            let baseX;
+            switch(horizontalPosition) {
+                case 'left':
+                    baseX = 30 + horizontalOffset;
+                    ctx.textAlign = 'left';
+                    break;
+                case 'right':
+                    baseX = canvasWidth - 30 + horizontalOffset;
+                    ctx.textAlign = 'right';
+                    break;
+                default: // center
+                    baseX = canvasWidth / 2 + horizontalOffset;
+                    ctx.textAlign = 'center';
+            }
+            
+            let yOffset = baseY;
+
+            for (let element of textElements) {
+                const computedStyle = window.getComputedStyle(element);
+                const fontSize = parseInt(computedStyle.fontSize);
+                const fontFamily = computedStyle.fontFamily;
+                const color = computedStyle.color;
+                const text = element.textContent;
+
+                ctx.font = `bold ${fontSize}px ${fontFamily}`;
+                ctx.fillStyle = color;
+                ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+                ctx.lineWidth = 2;
+
+                // 绘制文字阴影
+                ctx.strokeText(text, baseX, yOffset + fontSize);
+                // 绘制文字
+                ctx.fillText(text, baseX, yOffset + fontSize);
+
+                yOffset += fontSize + 10; // 为下一行文字增加间距
+            }
+        }
+
+        function downloadCanvas(canvas, filename) {
+            // 如果启用了自定义保存且浏览器支持
+            if (useCustomSave && 'showSaveFilePicker' in window) {
+                canvas.toBlob(async (blob) => {
+                    try {
+                        const fileHandle = await window.showSaveFilePicker({
+                            suggestedName: filename,
+                            types: [{
+                                description: 'PNG 图片',
+                                accept: { 'image/png': ['.png'] }
+                            }]
+                        });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        
+                        // 显示成功提示
+                        const originalText = selectedPath.textContent;
+                        selectedPath.textContent = `保存成功: ${filename}`;
+                        selectedPath.style.color = '#28a745';
+                        setTimeout(() => {
+                            selectedPath.textContent = originalText;
+                            selectedPath.style.color = '#28a745';
+                        }, 3000);
+                        
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.error('保存失败:', err);
+                            // 如果失败，回退到默认下载方式
+                            const link = document.createElement('a');
+                            link.download = filename;
+                            link.href = canvas.toDataURL();
+                            link.click();
+                        }
+                    }
+                });
+            } else {
+                // 默认下载方式
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL();
+                link.click();
+                
+                // 显示下载提示
+                const originalText = selectedPath.textContent;
+                selectedPath.textContent = `已下载: ${filename}`;
+                selectedPath.style.color = '#007bff';
+                setTimeout(() => {
+                    selectedPath.textContent = originalText;
+                    selectedPath.style.color = '#666';
+                }, 3000);
+            }
+        }
+
+        function saveHorizontalImage() {
+            const filename = generateFilename('_横版');
+            saveImage('horizontalContent', filename, 1920, 1080);
+        }
+
+        function saveVerticalImage() {
+            const filename = generateFilename('_竖版');
+            saveImage('verticalContent', filename, 1080, 1920);
+        }
+
+        // 事件监听器
+        titleTextInput.addEventListener('input', updatePreview);
+        subtitleTextInput.addEventListener('input', updatePreview);
+        fontFamilySelect.addEventListener('change', updatePreview);
+        textColorInput.addEventListener('input', updatePreview);
+        titleSizeInput.addEventListener('input', updatePreview);
+        subtitleSizeInput.addEventListener('input', updatePreview);
+        backgroundImageInput.addEventListener('change', handleBackgroundImage);
+        verticalPositionSelect.addEventListener('change', updatePreview);
+        horizontalPositionSelect.addEventListener('change', updatePreview);
+        verticalOffsetInput.addEventListener('input', updatePreview);
+        horizontalOffsetInput.addEventListener('input', updatePreview);
+        textOrderInputs.forEach(input => {
+            input.addEventListener('change', updatePreview);
+        });
+
+        // 初始化预览
+        updatePreview();
+    </script>
+</body>
+</html>
