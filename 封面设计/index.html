@@ -138,11 +138,16 @@
 
         .horizontal-preview {
             width: 480px;
-            height: 270px;
+            height: 360px;
         }
 
         .vertical-preview {
             width: 270px;
+            height: 480px;
+        }
+
+        .vertical-preview.ratio-3-4 {
+            width: 360px;
             height: 480px;
         }
 
@@ -255,6 +260,17 @@
         <div class="content">
             <div class="control-panel">
                 <div class="control-group">
+                    <h3>📐 画面比例</h3>
+                    <div class="form-group">
+                        <label>竖屏比例</label>
+                        <select id="verticalRatio">
+                            <option value="3:4">3:4 (标准)</option>
+                            <option value="9:16" selected>9:16 (手机)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
                     <h3>📝 文字内容</h3>
                     <div class="form-group">
                         <label>主标题</label>
@@ -348,7 +364,7 @@
 
             <div class="preview-area">
                 <div class="preview-container">
-                    <h3>🖥️ 横屏预览 (16:9)</h3>
+                    <h3>🖥️ 横屏预览 (4:3)</h3>
                     <div class="preview-canvas horizontal-preview" id="horizontalPreview">
                         <div class="canvas-content" id="horizontalContent">
                             <div class="safety-lines"></div>
@@ -361,7 +377,7 @@
                 </div>
 
                 <div class="preview-container">
-                    <h3>📱 竖屏预览 (9:16)</h3>
+                    <h3 id="verticalPreviewTitle">📱 竖屏预览 (9:16)</h3>
                     <div class="preview-canvas vertical-preview" id="verticalPreview">
                         <div class="canvas-content" id="verticalContent">
                             <div class="safety-lines"></div>
@@ -386,6 +402,8 @@
         const subtitleSizeInput = document.getElementById('subtitleSize');
         const backgroundImageInput = document.getElementById('backgroundImage');
         const textOrderInputs = document.querySelectorAll('input[name="textOrder"]');
+        const verticalRatioSelect = document.getElementById('verticalRatio');
+        const verticalPreviewTitle = document.getElementById('verticalPreviewTitle');
         
         // 位置控制元素
         const verticalPositionSelect = document.getElementById('verticalPosition');
@@ -415,6 +433,20 @@
         
         // 保存设置变量（保留用于兼容性）
         let useCustomSave = false;
+
+        // 更新竖屏比例
+        function updateVerticalRatio() {
+            const ratio = verticalRatioSelect.value;
+            const verticalPreview = document.getElementById('verticalPreview');
+            
+            if (ratio === '3:4') {
+                verticalPreview.classList.add('ratio-3-4');
+                verticalPreviewTitle.textContent = '📱 竖屏预览 (3:4)';
+            } else {
+                verticalPreview.classList.remove('ratio-3-4');
+                verticalPreviewTitle.textContent = '📱 竖屏预览 (9:16)';
+            }
+        }
 
         // 更新预览函数
         function updatePreview() {
@@ -735,12 +767,21 @@
 
         function saveHorizontalImage() {
             const filename = generateFilename('_横版');
-            saveImage('horizontalPreview', filename, 1920, 1080);
+            // 4:3 比例，使用1440x1080
+            saveImage('horizontalPreview', filename, 1440, 1080);
         }
 
         function saveVerticalImage() {
             const filename = generateFilename('_竖版');
-            saveImage('verticalPreview', filename, 1080, 1920);
+            const ratio = verticalRatioSelect.value;
+            
+            if (ratio === '3:4') {
+                // 3:4 比例，使用810x1080
+                saveImage('verticalPreview', filename, 810, 1080);
+            } else {
+                // 9:16 比例，使用1080x1920
+                saveImage('verticalPreview', filename, 1080, 1920);
+            }
         }
 
         // 事件监听器
@@ -755,6 +796,10 @@
         horizontalPositionSelect.addEventListener('change', updatePreview);
         verticalOffsetInput.addEventListener('input', updatePreview);
         horizontalOffsetInput.addEventListener('input', updatePreview);
+        verticalRatioSelect.addEventListener('change', () => {
+            updateVerticalRatio();
+            updatePreview();
+        });
         textOrderInputs.forEach(input => {
             input.addEventListener('change', updatePreview);
         });
@@ -793,6 +838,7 @@
         });
 
         // 初始化预览
+        updateVerticalRatio();
         updatePreview();
     </script>
 </body>
